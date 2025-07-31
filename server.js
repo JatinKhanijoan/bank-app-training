@@ -17,7 +17,7 @@ app.use(express.static('public')); // Serve static files from public directory
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root', // Replace with your MySQL username
-    password: '', // Replace with your MySQL password
+    password: 'your_password', // Replace with your MySQL password
     database: 'banking_app'
 });
 
@@ -41,6 +41,11 @@ function generateAccountNumber() {
 // Serve the main HTML file
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Serve the users HTML file
+app.get('/customers', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'customers.html'));
 });
 
 // API endpoint to create new customer

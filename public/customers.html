@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Application - Customer List</title>
+    <link rel="stylesheet" href="users-style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Banking Application</h1>
+            <h2>Customer List</h2>
+            <div class="nav-links">
+                <a href="/" class="btn btn-secondary">Add New Customer</a>
+                <button id="refreshBtn" class="btn btn-primary">Refresh Data</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div id="loadingSpinner" class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Loading customers...</p>
+            </div>
+
+            <div id="errorMessage" class="message error" style="display: none;"></div>
+
+            <div id="tableWrapper" style="display: none;">
+                <div class="table-info">
+                    <p>Total Customers: <span id="totalCount">0</span></p>
+                </div>
+                
+                <div class="table-scroll">
+                    <table id="customersTable" class="customers-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Mobile</th>
+                                <th>Account Number</th>
+                                <th>Account Type</th>
+                                <th>Opening Balance</th>
+                                <th>Address</th>
+                                <th>Created Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customersTableBody">
+                            <!-- Data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="noDataMessage" class="no-data" style="display: none;">
+                <h3>No customers found</h3>
+                <p>No customer records are available in the database.</p>
+                <a href="/" class="btn btn-primary">Add First Customer</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR'
+            }).format(amount);
+        }
+
+        // Function to format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('en-IN', {
+                year: 'numeric',
+                month: 'short',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Function to capitalize first letter
+        function capitalizeFirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        // Function to fetch and display customers
+        async function fetchCustomers() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const errorMessage = document.getElementById('errorMessage');
+            const tableWrapper = document.getElementById('tableWrapper');
+            const noDataMessage = document.getElementById('noDataMessage');
+            const refreshBtn = document.getElementById('refreshBtn');
+
+            // Show loading, hide others
+            loadingSpinner.style.display = 'block';
+            errorMessage.style.display = 'none';
+            tableWrapper.style.display = 'none';
+            noDataMessage.style.display = 'none';
+            refreshBtn.disabled = true;
+            refreshBtn.textContent = 'Loading...';
+
+            try {
+                const response = await fetch('/api/customers');
+                const result = await response.json();
+
+                if (result.success && result.customers.length > 0) {
+                    displayCustomers(result.customers);
+                    tableWrapper.style.display = 'block';
+                } else if (result.success && result.customers.length === 0) {
+                    noDataMessage.style.display = 'block';
+                } else {
+                    throw new Error(result.message || 'Failed to fetch customers');
+                }
+            } catch (error) {
+                console.error('Error fetching customers:', error);
+                errorMessage.textContent = 'Error: ' + error.message;
+                errorMessage.style.display = 'block';
+            } finally {
+                loadingSpinner.style.display = 'none';
+                refreshBtn.disabled = false;
+                refreshBtn.textContent = 'Refresh Data';
+            }
+        }
+
+        // Function to display customers in table
+        function displayCustomers(customers) {
+            const tableBody = document.getElementById('customersTableBody');
+            const totalCount = document.getElementById('totalCount');
+            
+            totalCount.textContent = customers.length;
+            
+            tableBody.innerHTML = '';
+
+            customers.forEach(customer => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td data-label="ID">${customer.id}</td>
+                    <td data-label="Name" class="name-cell">
+                        <strong>${customer.first_name} ${customer.last_name}</strong>
+                    </td>
+                    <td data-label="Email" class="email-cell">
+                        <a href="mailto:${customer.email}">${customer.email}</a>
+                    </td>
+                    <td data-label="Mobile" class="mobile-cell">
+                        <a href="tel:${customer.mobile_number}">${customer.mobile_number}</a>
+                    </td>
+                    <td data-label="Account Number" class="account-cell">
+                        <code>${customer.account_number}</code>
+                    </td>
+                    <td data-label="Account Type">
+                        <span class="account-type ${customer.account_type}">
+                            ${capitalizeFirst(customer.account_type)}
+                        </span>
+                    </td>
+                    <td data-label="Opening Balance" class="balance-cell">
+                        ${formatCurrency(customer.opening_balance)}
+                    </td>
+                    <td data-label="Address" class="address-cell">
+                        <div class="address-content" title="${customer.address}">
+                            ${customer.address.length > 50 ? 
+                                customer.address.substring(0, 50) + '...' : 
+                                customer.address}
+                        </div>
+                    </td>
+                    <td data-label="Created Date" class="date-cell">
+                        ${formatDate(customer.created_at)}
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Event listeners
+        document.getElementById('refreshBtn').addEventListener('click', fetchCustomers);
+
+        // Load customers when page loads
+        document.addEventListener('DOMContentLoaded', fetchCustomers);
+
+        // Auto-refresh every 30 seconds
+        setInterval(fetchCustomers, 30000);
+    </script>
+</body>
+</html>

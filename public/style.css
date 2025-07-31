@@ -27,6 +27,30 @@ body {
     animation: slideUp 0.6s ease-out;
 }
 
+.header-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+}
+
+.view-customers-link {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.view-customers-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+}
+
 @keyframes slideUp {
     from {
         opacity: 0;
@@ -40,7 +64,6 @@ body {
 
 h1 {
     color: #333;
-    text-align: center;
     margin-bottom: 10px;
     font-size: 2.2em;
     font-weight: 300;
@@ -48,8 +71,7 @@ h1 {
 
 h2 {
     color: #666;
-    text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 0;
     font-size: 1.2em;
     font-weight: 400;
 }
@@ -196,6 +218,16 @@ input[type="radio"] {
     
     .form-container {
         padding: 25px;
+    }
+    
+    .header-nav {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .view-customers-link {
+        align-self: center;
     }
     
     h1 {
